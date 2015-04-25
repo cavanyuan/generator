@@ -244,6 +244,19 @@ public class InnerClass extends JavaElement {
         sb.append(" {"); //$NON-NLS-1$
         indentLevel++;
         
+        if (superInterfaceTypes.size() > 0) {
+        	 for (FullyQualifiedJavaType fqjt : superInterfaceTypes) {
+        		 if(fqjt.getFullyQualifiedName().equals("java.io.Serializable")){
+        			 OutputUtilities.newLine(sb);
+        			 OutputUtilities.newLine(sb);
+        			 OutputUtilities.javaIndent(sb, indentLevel);
+        			 sb.append("private static final long serialVersionUID = 1L;");
+        			 OutputUtilities.newLine(sb);
+        			 break;
+        		 }
+        	 }
+        }
+        
         Iterator<Field> fldIter = fields.iterator();
         while (fldIter.hasNext()) {
             OutputUtilities.newLine(sb);

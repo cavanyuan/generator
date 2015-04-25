@@ -18,6 +18,7 @@ package org.mybatis.generator.codegen.mybatis3.model;
 import static org.mybatis.generator.internal.util.JavaBeansUtil.getJavaBeansField;
 import static org.mybatis.generator.internal.util.JavaBeansUtil.getJavaBeansGetter;
 import static org.mybatis.generator.internal.util.JavaBeansUtil.getJavaBeansSetter;
+import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.mybatis.generator.api.dom.java.Parameter;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.codegen.AbstractJavaGenerator;
 import org.mybatis.generator.codegen.RootClassInfo;
+import org.mybatis.generator.config.PropertyRegistry;
 
 /**
  * 
@@ -67,7 +69,21 @@ public class BaseRecordGenerator extends AbstractJavaGenerator {
             topLevelClass.setSuperClass(superClass);
             topLevelClass.addImportedType(superClass);
         }
+        
+        String rootInterface = introspectedTable
+                .getTableConfigurationProperty(PropertyRegistry.ANY_ROOT_INTERFACE);
+        if (!stringHasValue(rootInterface)) {
+            rootInterface = context.getJavaModelGeneratorConfiguration()
+                .getProperty(PropertyRegistry.ANY_ROOT_INTERFACE);
+        }
 
+        if (stringHasValue(rootInterface)) {
+            FullyQualifiedJavaType fqjt = new FullyQualifiedJavaType(
+                    rootInterface);
+            topLevelClass.addSuperInterface(fqjt);
+            topLevelClass.addImportedType(fqjt);
+        }
+        
         List<IntrospectedColumn> introspectedColumns = getColumnsInThisClass();
 
         if (introspectedTable.isConstructorBased()) {
@@ -77,6 +93,8 @@ public class BaseRecordGenerator extends AbstractJavaGenerator {
                 addDefaultConstructor(topLevelClass);
             }
         }
+        
+        commentGenerator.addClassComment(topLevelClass, introspectedTable);
         
         String rootClass = getRootClass();
         for (IntrospectedColumn introspectedColumn : introspectedColumns) {
